@@ -8,7 +8,6 @@ import org.lwjgl.opengl.GL30._
 import org.lwjgl.opengl.GL33._
 import org.lwjgl.opengl.GL40._
 import org.lwjgl.opengl.GL43._
-import util.GlInfo
 import java.io.File
 import util.ShaderProgram
 import util.ShaderFactory
@@ -17,22 +16,28 @@ import scala.util.Success
 import org.lwjgl.BufferUtils
 import util.GlUtils
 import org.lwjgl.opengl.GL31
+import util.GlInfo
 
-class TestScene extends Scene {
+class MdiScene extends Scene {
   val shaderPath = new File(getClass().getResource("/shaders/mdi_test").toURI())
   
+  // Data for the indirect buffer
   val indirectData = Array(
       3, 1, 0, 0,
       6, 4, 3, 1
   )
   
   val vertexData = Array(
+      // a centered triangle
+      
       -0.5f, -0.5f, 0f,
        0.5f, -0.5f, 0f,
          0f,  0.5f, 0f,
          
       //--------------
        
+       // a quad (too big for the screen without scaling)
+         
        -1f, -1f, 0f,
        1f,  -1f, 0f,
        1f,   1f, 0f,
@@ -42,12 +47,18 @@ class TestScene extends Scene {
        -1f,  1f, 0f
   )
   
+  // model transformation data
   // column major!
   val modelData = Array(
+    // identity matrix for the triangle
+      
     1f, 0f, 0f, 0f,
     0f, 1f, 0f, 0f,
     0f, 0f, 1f, 0f,
     0f, 0f, 0f, 1f,
+    
+    // four matrices for the quads   
+    // that scale and translate them
     
     0.1f,    0f,    0f,   0f,
     0f,    0.1f,    0f,   0f,
@@ -79,6 +90,9 @@ class TestScene extends Scene {
   def start(): SceneStatus = {
     println("Starting")
     
+    if(!isSupported())
+      return SceneError(new RuntimeException("Sorry, your computer doesn't support the necessary OpenGL features."))
+    
     // compile shaders
     val sf = new ShaderFactory()
        .setShader(GL_VERTEX_SHADER, new File(shaderPath, "vert.glsl"))
@@ -99,7 +113,6 @@ class TestScene extends Scene {
     sf.cleanUp()
     
     
-    
     // push data onto gpu
     
     val iboId = glGenBuffers()
@@ -108,6 +121,10 @@ class TestScene extends Scene {
     val ibuf = BufferUtils.createIntBuffer(indirectData.length)
     ibuf.put(indirectData).flip()
     glBufferData(GL_DRAW_INDIRECT_BUFFER, ibuf, GL_STATIC_DRAW)
+    
+    
+    // the vao is not necessary for this example
+    // but for the sake of demonstration I'm still using one
     
     vaoId = glGenVertexArrays()
     glBindVertexArray(vaoId)
@@ -134,15 +151,15 @@ class TestScene extends Scene {
     
     val modAttribLoc = prog.attribLocations("model")
     
-    val bytePerFloat = 4
-    val floatPerMat = 16
-    val stride = bytePerFloat * floatPerMat
+    val bytesPerFloat = 4
+    val floatsPerMat = 16
+    val stride = bytesPerFloat * floatsPerMat
     
     // mat4 attribute = 4 vec4 attributes
     glVertexAttribPointer(modAttribLoc,   4, GL_FLOAT, false, stride, 0)
-    glVertexAttribPointer(modAttribLoc+1, 4, GL_FLOAT, false, stride, 4*bytePerFloat)
-    glVertexAttribPointer(modAttribLoc+2, 4, GL_FLOAT, false, stride, 8*bytePerFloat)
-    glVertexAttribPointer(modAttribLoc+3, 4, GL_FLOAT, false, stride, 12*bytePerFloat)
+    glVertexAttribPointer(modAttribLoc+1, 4, GL_FLOAT, false, stride, 4*bytesPerFloat)
+    glVertexAttribPointer(modAttribLoc+2, 4, GL_FLOAT, false, stride, 8*bytesPerFloat)
+    glVertexAttribPointer(modAttribLoc+3, 4, GL_FLOAT, false, stride, 12*bytesPerFloat)
     
     // one matrix per instance, not per vertex
     glVertexAttribDivisor(modAttribLoc,   1)
@@ -150,8 +167,7 @@ class TestScene extends Scene {
     glVertexAttribDivisor(modAttribLoc+2, 1)
     glVertexAttribDivisor(modAttribLoc+3, 1)
     
-//    glBindBuffer(GL_ARRAY_BUFFER, 0)
-//    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0)
+    
     
     glEnableVertexAttribArray(posAttribLoc)
     
@@ -169,13 +185,11 @@ class TestScene extends Scene {
   }
   
   def update(dt: Float): SceneResult = {
-    // DRAW!
-    
+    // draw, with a single draw call!
     glMultiDrawArraysIndirect(GL_TRIANGLES, 0, indirectData.length/4, 16)
     
-//    GL31.glDrawArraysInstanced(GL_TRIANGLES, 0, 3, 1)
-    
     GlUtils.printIfError()
+    
     SceneSuccess
   }
   
@@ -209,4 +223,8 @@ class TestScene extends Scene {
     // Done!
     SceneSuccess
   }
+  
+  def isSupported() =
+    GlInfo.majorVersion >= 4 && GlInfo.minorVersion >= 3 ||
+    GlInfo.supportsExtension("GL_ARB_multi_draw_indirect")
 }

@@ -30,20 +30,21 @@ import org.lwjgl.opengl.GLContext
 import org.lwjgl.system.MemoryUtil.NULL
 import gui.Constants._
 import gui.scenes.SceneQuit
-import gui.scenes.MdiTriangleScene
 import gui.scenes.ErrorScene
 import gui.scenes.SceneTransition
 import gui.scenes.SceneSuccess
 import gui.scenes.SceneResult
 import gui.scenes.SceneError
 import gui.scenes.QuadScene
+import gui.scenes.TestScene
+import gui.scenes.MdiScene
 
 object GameGUI {
   val DEFAULT_WIDTH = SCREEN_SIZE.width / 2
   val DEFAULT_HEIGHT = SCREEN_SIZE.height / 2
   
   var window = NULL
-  var scene: Scene = new MdiTriangleScene()
+  var scene: Scene = new MdiScene()
   
   def main(args: Array[String]): Unit = {
     try {
@@ -89,7 +90,7 @@ object GameGUI {
     glClearColor(0f, 0f, 0f, 1f)
     
     var lastFrame = System.currentTimeMillis()
-    scene.start()
+    checkSceneResult(scene.start())
     while(glfwWindowShouldClose(window) == GL_FALSE) {
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
       val dtm = System.currentTimeMillis() - lastFrame

@@ -8,8 +8,8 @@ import org.lwjgl.opengl.GL11
 
 
 
-object GLInfo {
-  private val info: GLInfo = new GLInfo
+object GlInfo {
+  private val info: GlInfo = new GlInfo
   def minorVersion = info.minorVersion
   def majorVersion = info.majorVersion
   def versionString = info.versionString
@@ -19,7 +19,7 @@ object GLInfo {
   def supportsExtension(e: String) = info.supportedExtendsions.contains(e)
 }
 
-private class GLInfo {
+private class GlInfo {
   val versionString = glGetString(GL_VERSION)
   
   val (majorVersion, minorVersion) = {
