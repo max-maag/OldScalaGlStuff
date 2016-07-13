@@ -11,16 +11,16 @@ import scala.util.Failure
 class ShaderFactory {
   private var shaderIds = Map.empty[File, Int]
   private var shaders = Map.empty[Int, File]
-  private var attribLocations = Map.empty[String, Int]
-  private var uniformLocations = Map.empty[String, Int]
+  private var attribLocations = Map.empty[String, ShaderArgument]
+  private var uniformLocations = Map.empty[String, ShaderArgument]
   
   def setShader(shaderType: Int, path: File): ShaderFactory = {
     shaders += shaderType -> path
     return this
   }
   
-  def setAttribLocation(name: String, pos: Int): ShaderFactory = {
-    attribLocations += name -> pos
+  def setAttribLocation(name: String, pos: Int, size: Int = 1): ShaderFactory = {
+    attribLocations += name -> new ShaderArgument(pos, size)
     return this
   }
   
@@ -29,13 +29,13 @@ class ShaderFactory {
     return this
   }
   
-  def registerAttribute(name: String): ShaderFactory = {
-    attribLocations += name -> ShaderFactory.UNKNOWN_LOCATION
+  def registerAttribute(name: String, size: Int = 1): ShaderFactory = {
+    attribLocations += name -> new ShaderArgument(ShaderFactory.UNKNOWN_LOCATION, size)
     return this
   }
   
-  def registerUniform(name: String): ShaderFactory = {
-    uniformLocations += name -> ShaderFactory.UNKNOWN_LOCATION
+  def registerUniform(name: String, size: Int = 1): ShaderFactory = {
+    uniformLocations += name -> new ShaderArgument(ShaderFactory.UNKNOWN_LOCATION, size)
     return this
   }
   
@@ -53,8 +53,8 @@ class ShaderFactory {
       glAttachShader(pId, shaderId)
     }
     
-    for(entry <- attribLocations if(entry._2 != ShaderFactory.UNKNOWN_LOCATION)) 
-        glBindAttribLocation(pId, entry._2, entry._1)
+    for((name, argument) <- attribLocations if(argument.location != ShaderFactory.UNKNOWN_LOCATION)) 
+        glBindAttribLocation(pId, argument.location, name)
         
     glLinkProgram(pId)
     checkProgStatus(pId, GL_LINK_STATUS, "Program link")
@@ -65,11 +65,11 @@ class ShaderFactory {
     for(id <- shaderIds.values)
       glDetachShader(pId, id)
       
-    for(name <- attribLocations.keys)
-      attribLocations += name -> glGetAttribLocation(pId, name)
+    for((name, argument) <- attribLocations if(argument.location == ShaderFactory.UNKNOWN_LOCATION))
+      attribLocations += name -> new ShaderArgument(glGetAttribLocation(pId, name), argument.size)
       
-    for(name <- uniformLocations.keys)
-      uniformLocations += name -> glGetUniformLocation(pId, name)
+    for((name, argument) <- uniformLocations if(argument.location == ShaderFactory.UNKNOWN_LOCATION))
+      uniformLocations += name -> new ShaderArgument(glGetUniformLocation(pId, name), argument.size)
       
     return Success(new ShaderProgram(pId, attribLocations, uniformLocations))
   }

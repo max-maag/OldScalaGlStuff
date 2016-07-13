@@ -1,39 +1,18 @@
 package math
 
-class Vec2f(var x: Float = 0, var y: Float = 0) {
-  def this(v: Vec2f) = this(v.x, v.y)
+class Vec2f(_x: Float = 0, _y: Float = 0) extends VecfLike[Vec2f] {
+  // val leads to initialization problems 
+  override def dim = 2
+  this(0) = _x
+  this(1) = _y
   
-  def zip(v: Vec2f, o: (Float, Float) => Float): Vec2f = {
-    x = o(x, v.x)
-    y = o(y, v.y)
-    return this
-  }
+  def copy = new Vec2f(this(0), this(1))
   
-  def zipped(v: Vec2f, o: (Float, Float) => Float): Vec2f =
-    new Vec2f(this).zip(v, o)
-    
-  def foreach(f: Float, o: (Float, Float) => Float): Vec2f = {
-    x = o(x, f)
-    y = o(y, f)
-    return this
-  }
+  def x = this(0)
+  def y = this(1)
   
-  def foreached(f: Float, o: (Float, Float) => Float): Vec2f =
-    new Vec2f(this).foreach(f, o)
-    
-  def +(v: Vec2f) = zipped(v, _+_)
-  def +=(v: Vec2f) = zip(v, _+_)
-  
-  def -(v: Vec2f) = zipped(v, _-_)
-  def -=(v: Vec2f) = zip(v, _-_)
-  
-  def *(f: Float) = foreached(f, _*_)
-  def *=(f: Float) = foreach(f, _*_)
-  
-  def *(v: Vec2f) = x * v.x + y * v.y
-  
-  def lenSquared = x*x + y*y
-  def len = scala.math.sqrt(lenSquared)
+  def x_=(f: Float) = this(0) = f
+  def y_=(f: Float) = this(1) = f
 }
 
 object Vec2f {

@@ -2,6 +2,7 @@ package util
 
 import org.lwjgl.opengl.GL11._
 import org.lwjgl.opengl.GL30.GL_INVALID_FRAMEBUFFER_OPERATION
+import org.lwjgl.opengl.GL32._
 
 object GlUtils {
   def getError() = glGetError() match {
@@ -18,8 +19,21 @@ object GlUtils {
     case GL_OUT_OF_MEMORY => "GL_OUT_OF_MEMORY"
     case GL_STACK_UNDERFLOW => "GL_STACK_UNDERFLOW"
     case GL_STACK_OVERFLOW => "GL_STACK_OVERFLOW"
-    case _ => s"Unknown error: ${code}"
+    case _ => s"Unknown error: $code"
   }
   
-  def printIfError() = getError().map{println}
+  def printIfError(): Unit = getError().map{println}
+  
+  def checkSyncResult(res: Int): Unit = res match {
+    case GL_ALREADY_SIGNALED =>
+    case GL_CONDITION_SATISFIED =>
+    case GL_TIMEOUT_EXPIRED => println("Timeout expired")
+    case GL_WAIT_FAILED =>
+      println("Wait failed")
+      GlUtils.printIfError()
+      
+    case i =>
+      println("Unknown sync result: " + i)
+      GlUtils.printIfError()
+  }
 }

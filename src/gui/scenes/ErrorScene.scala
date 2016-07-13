@@ -1,8 +1,6 @@
 package gui.scenes
 
-import gui.scenes.SceneSuccess
 import gui.Scene
-import gui.scenes.SceneSuccess
 
 class ErrorScene(val e: Throwable) extends Scene {
   def start() = {

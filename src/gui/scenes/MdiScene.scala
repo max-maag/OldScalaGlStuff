@@ -98,7 +98,7 @@ class MdiScene extends Scene {
        .setShader(GL_VERTEX_SHADER, new File(shaderPath, "vert.glsl"))
        .setShader(GL_FRAGMENT_SHADER, new File(shaderPath, "frag.glsl"))
        .registerAttribute("pos")
-       .registerAttribute("model")
+       .registerAttribute("model", 4)
        
      sf.buildProgram() match {
        case Success(p) => {
@@ -136,7 +136,7 @@ class MdiScene extends Scene {
     vbuf.put(vertexData).flip()
     glBufferData(GL_ARRAY_BUFFER, vbuf, GL_STATIC_DRAW)
     
-    val posAttribLoc = prog.attribLocations("pos")
+    val posAttribLoc = prog.attributes("pos").location
     
     glVertexAttribPointer(posAttribLoc, 3, GL_FLOAT, false, 0, 0)
     
@@ -149,34 +149,22 @@ class MdiScene extends Scene {
     mbuf.put(modelData).flip()
     glBufferData(GL_ARRAY_BUFFER, mbuf, GL_STATIC_DRAW)
     
-    val modAttribLoc = prog.attribLocations("model")
+    val modAttribLoc = prog.attributes("model").location
     
     val bytesPerFloat = 4
     val floatsPerMat = 16
     val stride = bytesPerFloat * floatsPerMat
     
     // mat4 attribute = 4 vec4 attributes
-    glVertexAttribPointer(modAttribLoc,   4, GL_FLOAT, false, stride, 0)
-    glVertexAttribPointer(modAttribLoc+1, 4, GL_FLOAT, false, stride, 4*bytesPerFloat)
-    glVertexAttribPointer(modAttribLoc+2, 4, GL_FLOAT, false, stride, 8*bytesPerFloat)
-    glVertexAttribPointer(modAttribLoc+3, 4, GL_FLOAT, false, stride, 12*bytesPerFloat)
+    for(i <- 0 to 3)
+      glVertexAttribPointer(modAttribLoc+i, 4, GL_FLOAT, false, stride, i*4*bytesPerFloat)
     
     // one matrix per instance, not per vertex
-    glVertexAttribDivisor(modAttribLoc,   1)
-    glVertexAttribDivisor(modAttribLoc+1, 1)
-    glVertexAttribDivisor(modAttribLoc+2, 1)
-    glVertexAttribDivisor(modAttribLoc+3, 1)
+    prog.vertexAttribDivisor("model", 1)
     
+    prog.enableVertAttribArrays()
     
-    
-    glEnableVertexAttribArray(posAttribLoc)
-    
-    glEnableVertexAttribArray(modAttribLoc)
-    glEnableVertexAttribArray(modAttribLoc+1)
-    glEnableVertexAttribArray(modAttribLoc+2)
-    glEnableVertexAttribArray(modAttribLoc+3)
-    
-    glUseProgram(prog.id)
+    prog.use()
     
     GlUtils.printIfError()
     println("Start done")
@@ -186,7 +174,7 @@ class MdiScene extends Scene {
   
   def update(dt: Float): SceneResult = {
     // draw, with a single draw call!
-    glMultiDrawArraysIndirect(GL_TRIANGLES, 0, indirectData.length/4, 16)
+    glMultiDrawArraysIndirect(GL_TRIANGLES, 0, indirectData.length/4, 0)
     
     GlUtils.printIfError()
     
@@ -197,16 +185,9 @@ class MdiScene extends Scene {
     println("Ending")
     
     glUseProgram(0)
+    
+    prog.disableVertAttribArrays()
     prog.cleanUp()
-    
-    val modAttribLoc = prog.attribLocations("model")
-    
-    glDisableVertexAttribArray(modAttribLoc)
-    glDisableVertexAttribArray(modAttribLoc+1)
-    glDisableVertexAttribArray(modAttribLoc+2)
-    glDisableVertexAttribArray(modAttribLoc+3)
-    
-    glDisableVertexAttribArray(prog.attribLocations("pos"))
     
     glBindVertexArray(0)
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0)

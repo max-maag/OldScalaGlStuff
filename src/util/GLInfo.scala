@@ -17,6 +17,7 @@ object GlInfo {
   def renderer = info.renderer
   def supportedExtensions = info.supportedExtendsions
   def supportsExtension(e: String) = info.supportedExtendsions.contains(e)
+  def supportsExtensions(es: String*) = es.filterNot(info.supportedExtendsions.contains(_)).isEmpty
 }
 
 private class GlInfo {
