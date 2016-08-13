@@ -1,8 +1,14 @@
-package model.glDebugConstants
+package util
 
-import org.lwjgl.opengl.GL11.GL_DONT_CARE
+import org.lwjgl.opengl.GL11._
+import org.lwjgl.opengl.GL20._
+import org.lwjgl.opengl.GL32._
+import org.lwjgl.opengl.GL40._
 import org.lwjgl.opengl.GL43._
-import model.GlConstantWrapper
+
+trait GlConstantWrapper {
+  val oglConstant: Int
+}
 
 trait HumanReadableConstant extends GlConstantWrapper {
   val readableName: String
@@ -10,36 +16,36 @@ trait HumanReadableConstant extends GlConstantWrapper {
   override def toString = s"[$readableName: $readableValue]"
 }
 
-trait Source extends HumanReadableConstant {
+trait DebugSource extends HumanReadableConstant {
   val readableName = "Source"
 }
 
-case object GlDebugSourceApi extends Source {
+case object GlDebugSourceApi extends DebugSource {
   val oglConstant = GL_DEBUG_SOURCE_API
   val readableValue = "API"
 }
 
-case object GlDebugSourceWindowSystem extends Source {
+case object GlDebugSourceWindowSystem extends DebugSource {
   val oglConstant = GL_DEBUG_SOURCE_WINDOW_SYSTEM
   val readableValue = "Window System"
 }
 
-case object GlDebugSourceShaderCompiler extends Source {
+case object GlDebugSourceShaderCompiler extends DebugSource {
   val oglConstant = GL_DEBUG_SOURCE_SHADER_COMPILER
   val readableValue = "Shader Compiler"
 }
 
-case object GlDebugSourceThirdParty extends Source {
+case object GlDebugSourceThirdParty extends DebugSource {
   val oglConstant = GL_DEBUG_SOURCE_THIRD_PARTY
   val readableValue = "Third Party"
 }
 
-case object GlDebugSourceApplication extends Source {
+case object GlDebugSourceApplication extends DebugSource {
   val oglConstant = GL_DEBUG_SOURCE_APPLICATION
   val readableValue = "Application"
 }
 
-case object GlDebugSourceOther extends Source {
+case object GlDebugSourceOther extends DebugSource {
   val oglConstant = GL_DEBUG_SOURCE_OTHER
   val readableValue = "other"
 }
@@ -144,8 +150,34 @@ object GlDebugConstants {
   }
 }
 
-case object GlDontCare extends Source with Type with Severity {
+case object GlDontCare extends DebugSource with Type with Severity {
   val oglConstant = GL_DONT_CARE
   override val readableName = "This makes no sense."
   override val readableValue = "Don't care."
+}
+
+trait ShaderType extends GlConstantWrapper
+
+case object VertexShader extends ShaderType {
+  val oglConstant = GL_VERTEX_SHADER
+}
+
+case object FragmentShader extends ShaderType {
+  val oglConstant = GL_FRAGMENT_SHADER
+}
+
+case object GemoetryShader extends ShaderType {
+  val oglConstant = GL_GEOMETRY_SHADER
+}
+
+case object ComputeShader extends ShaderType {
+  val oglConstant = GL_COMPUTE_SHADER
+}
+
+case object TesselationControlShader extends ShaderType {
+  val oglConstant = GL_TESS_CONTROL_SHADER
+}
+
+case object TesselationEvaluationShader extends ShaderType {
+  val oglConstant = GL_TESS_EVALUATION_SHADER
 }

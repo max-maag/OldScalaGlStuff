@@ -7,36 +7,44 @@ import scala.io.Source
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
+import model.Implicits._
+import model.GlPersistentBuffer
 
 class ShaderFactory {
   private var shaderIds = Map.empty[File, Int]
-  private var shaders = Map.empty[Int, File]
+  private var shaders = Map.empty[ShaderType, File]
   private var attribLocations = Map.empty[String, ShaderArgument]
   private var uniformLocations = Map.empty[String, ShaderArgument]
   
-  def setShader(shaderType: Int, path: File): ShaderFactory = {
+  def setShader(shaderType: ShaderType, path: File) = {
     shaders += shaderType -> path
-    return this
+    this
+  }
+  
+  def removeShader(shaderType: ShaderType) = {
+    shaderIds -= shaders(shaderType)
+    shaders -= shaderType
+    this
   }
   
   def setAttribLocation(name: String, pos: Int, size: Int = 1): ShaderFactory = {
     attribLocations += name -> new ShaderArgument(pos, size)
-    return this
+    this
   }
   
   def unsetAttribute(name: String): ShaderFactory = {
     attribLocations -= name
-    return this
+    this
   }
   
   def registerAttribute(name: String, size: Int = 1): ShaderFactory = {
     attribLocations += name -> new ShaderArgument(ShaderFactory.UNKNOWN_LOCATION, size)
-    return this
+    this
   }
   
   def registerUniform(name: String, size: Int = 1): ShaderFactory = {
     uniformLocations += name -> new ShaderArgument(ShaderFactory.UNKNOWN_LOCATION, size)
-    return this
+    this
   }
   
   def buildProgram(): Try[ShaderProgram] = {
@@ -49,7 +57,7 @@ class ShaderFactory {
         }
       }
       
-      var shaderId = shaderIds(entry._2)
+      val shaderId = shaderIds(entry._2)
       glAttachShader(pId, shaderId)
     }
     
@@ -71,11 +79,11 @@ class ShaderFactory {
     for((name, argument) <- uniformLocations if(argument.location == ShaderFactory.UNKNOWN_LOCATION))
       uniformLocations += name -> new ShaderArgument(glGetUniformLocation(pId, name), argument.size)
       
-    return Success(new ShaderProgram(pId, attribLocations, uniformLocations))
+    Success(new ShaderProgram(pId, attribLocations, uniformLocations))
   }
   
-  private def compileShader(shaderType: Int, shader: File): Try[Int] =
-    TryWith(Source.fromFile(shader))(_.mkString ) match {
+  private def compileShader(shaderType: ShaderType, shader: File): Try[Int] =
+    TryWith(Source.fromFile(shader))(_.mkString) match {
       case Success(shaderSource) => {
         val shaderId = glCreateShader(shaderType)
         glShaderSource(shaderId, shaderSource)
@@ -85,10 +93,11 @@ class ShaderFactory {
           return Failure(new RuntimeException(s"Shader compilation error:\n${glGetShaderInfoLog(shaderId)}"))
           
         shaderIds += shader -> shaderId
-        return Success(shaderId)
+        Success(shaderId)
       }
       
-      case Failure(e) => Failure(e)
+      case Failure(e) =>
+        Failure(e)
     }
   
   private def checkProgStatus(pId: Int, statusType: Int, desc: String) = {
@@ -96,9 +105,17 @@ class ShaderFactory {
       throw new RuntimeException(s"${desc} error:\n${glGetProgramInfoLog(pId)}")
   }
   
+  def clearShaders() = {
+    shaders = Map.empty
+    shaderIds = Map.empty
+    this
+  }
+  
   def cleanUp() = {
     for(id <- shaderIds.values)
       glDeleteShader(id)
+      
+    this
   }
 }
 

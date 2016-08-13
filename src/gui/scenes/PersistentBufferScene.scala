@@ -14,6 +14,8 @@ import model.Implicits._
 import util.GlUtils
 import util.ShaderFactory
 import util.ShaderProgram
+import util.VertexShader
+import util.FragmentShader
 
 class PersistentBufferScene extends Scene {
   val shaderPath = new File(getClass().getResource("/shaders/simple").toURI())
@@ -24,8 +26,8 @@ class PersistentBufferScene extends Scene {
   
   def start(): SceneStatus = {
     val sf = new ShaderFactory()
-      .setShader(GL_VERTEX_SHADER, new File(shaderPath, "vert.glsl"))
-      .setShader(GL_FRAGMENT_SHADER, new File(shaderPath, "frag.glsl"))
+      .setShader(VertexShader, new File(shaderPath, "vert.glsl"))
+      .setShader(FragmentShader, new File(shaderPath, "frag.glsl"))
       .registerAttribute("pos")
     
     sf.buildProgram() match {

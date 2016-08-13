@@ -1,6 +1,7 @@
 package model
 
 import org.lwjgl.opengl.GL11._
+import util.GlConstantWrapper
 
 trait NumType extends GlConstantWrapper {
   /** In bytes */

@@ -8,6 +8,7 @@ import math.VecfLike
 
 import primitiveBuffer.PrimitiveBuffer
 import primitiveBuffer.Implicits._
+import util.GlConstantWrapper
 
 object Implicits {
   implicit object FloatIsStorable extends BufferStorable[Float] {

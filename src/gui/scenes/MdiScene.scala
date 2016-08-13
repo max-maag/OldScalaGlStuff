@@ -17,6 +17,8 @@ import org.lwjgl.BufferUtils
 import util.GlUtils
 import org.lwjgl.opengl.GL31
 import util.GlInfo
+import util.VertexShader
+import util.FragmentShader
 
 class MdiScene extends Scene {
   val shaderPath = new File(getClass().getResource("/shaders/mdi_test").toURI())
@@ -95,8 +97,8 @@ class MdiScene extends Scene {
     
     // compile shaders
     val sf = new ShaderFactory()
-       .setShader(GL_VERTEX_SHADER, new File(shaderPath, "vert.glsl"))
-       .setShader(GL_FRAGMENT_SHADER, new File(shaderPath, "frag.glsl"))
+       .setShader(VertexShader, new File(shaderPath, "vert.glsl"))
+       .setShader(FragmentShader, new File(shaderPath, "frag.glsl"))
        .registerAttribute("pos")
        .registerAttribute("model", 4)
        

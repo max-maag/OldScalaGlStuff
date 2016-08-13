@@ -24,6 +24,8 @@ import model.GameObject
 import model.Transform2D
 import model.Transform2D
 import model.Triangles
+import util.FragmentShader
+import util.VertexShader
 
 /* TODO:
  * 1. Find out why the screen is black.
@@ -48,8 +50,8 @@ class RenderManagerScene extends Scene {
           "Sorry, you need a graphics card that supports OpenGL 4.4 or at least the ARB_multi_draw_indirect and ARB_buffer_storage extensions."))
           
     val sf = new ShaderFactory()
-      .setShader(GL_VERTEX_SHADER, new File(shaderPath, "vert.glsl"))
-      .setShader(GL_FRAGMENT_SHADER, new File(shaderPath, "frag.glsl"))
+      .setShader(VertexShader, new File(shaderPath, "vert.glsl"))
+      .setShader(FragmentShader, new File(shaderPath, "frag.glsl"))
       .registerAttribute("pos")
       .registerAttribute("model", 3)
     

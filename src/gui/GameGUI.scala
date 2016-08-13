@@ -21,11 +21,14 @@ import gui.scenes.SceneQuit
 import gui.scenes.SceneResult
 import gui.scenes.SceneSuccess
 import gui.scenes.SceneTransition
-import model.glDebugConstants.GlDebugConstants
+import util.GlDebugConstants
 import util.FpsCounter
 import util.GlInfo
 import util.GlUtils
 import gui.scenes.MdiScene
+import gui.scenes.JuliaScene
+import org.lwjgl.glfw.GLFWWindowSizeCallback
+import org.lwjgl.glfw.GLFWFramebufferSizeCallback
 
 object GameGUI {
   val DEFAULT_WIDTH = SCREEN_SIZE.width / 2
@@ -33,7 +36,7 @@ object GameGUI {
   val fpsCounter = new FpsCounter
   
   var window = NULL
-  var scene: Scene = new MdiScene
+  var scene: Scene = null //new MdiScene
   
   def main(args: Array[String]): Unit = {
     try {
@@ -59,7 +62,7 @@ object GameGUI {
     val width = DEFAULT_WIDTH
     val height = DEFAULT_HEIGHT
     
-    window = glfwCreateWindow(width, height, "Scala Pong", NULL, NULL)
+    window = glfwCreateWindow(width, height, "Scala OpenGL Stuff", NULL, NULL)
     if(window == NULL)
       onError("Failed to create GLFW window")
       
@@ -76,6 +79,13 @@ object GameGUI {
     glfwSwapInterval(1)
     glfwShowWindow(window)
     
+    glfwSetFramebufferSizeCallback(window, new GLFWFramebufferSizeCallback {
+      override def invoke(window: Long, width: Int, height: Int) = {
+        glViewport(0,0,width,height)
+        scene.changeResolution(width, height)
+      }
+    })
+    
     GL.createCapabilities()
     println(s"Using OpenGL ${GlInfo.majorVersion}.${GlInfo.minorVersion}")
     
@@ -91,6 +101,8 @@ object GameGUI {
       glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, Array.emptyIntArray, true)
       
       GlUtils.printIfError()
+      
+      scene = new JuliaScene(width, height)
     }
   }
   
@@ -99,7 +111,7 @@ object GameGUI {
     glClearColor(0f, 0f, 0f, 1f)
     
     var lastFrame = System.currentTimeMillis()
-    fpsCounter.start()
+//    fpsCounter.start()
     checkSceneResult(scene.start())
     while(!glfwWindowShouldClose(window)) {
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
