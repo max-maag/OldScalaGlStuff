@@ -18,6 +18,7 @@ import util.ComputeShader
 import util.FragmentShader
 import util.VertexShader
 import util.GlUtils
+import java.nio.IntBuffer
 
 class JuliaScene(width: Int, height: Int) extends Scene {
   private var compProg: ShaderProgram = null
@@ -124,11 +125,7 @@ class JuliaScene(width: Int, height: Int) extends Scene {
     val fw = args.width * args.fsaa
     val fh = args.height * args.fsaa
     if(args.textureNeedsResize) {
-      val buf = createIntBuffer(fw * fh)
-      zeroBuffer(buf)
-      buf.flip()
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_R32UI, fw, fh, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, buf)
-      
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_R32UI, fw, fh, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, 0l)
       glBindImageTexture(0, tex, 0, false, 0, GL_READ_WRITE, GL_R32UI)
     }
     
