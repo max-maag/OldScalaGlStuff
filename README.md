@@ -1,3 +1,7 @@
+Project has moved [here](https://github.com/max-maag/ScalaGlStuff).
+
+------
+
 # ScalaGlStuff
 
 My experiments with OpenGL using Scala and LWJGL.
